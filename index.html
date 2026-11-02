@@ -4,16 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VidStar</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-neutral-900 text-white">
+  <body class="bg-neutral-900 text-white m-0 p-0">
     <div id="root"></div>
-    <script type="text/babel" src="App.jsx"></script>
-    <script type="text/babel">
-      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    <script type="text/babel" data-presets="react,stage-3">
+      try {
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+      } catch (err) {
+        document.getElementById('root').innerHTML = '<div style="color:white;padding:20px;font-family:sans-serif;"><h2>שגיאה בטעינת האפליקציה</h2><pre>' + err.message + '</pre></div>';
+      }
     </script>
+    <script type="text/babel" data-presets="react,stage-3" src="App.jsx"></script>
   </body>
 </html>
