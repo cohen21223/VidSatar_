@@ -3,193 +3,187 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VidStar - פלטפורמת הסטרימינג המקצועית</title>
+    <title>VidStar</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      ::-webkit-scrollbar { width: 6px; height: 6px; }
-      ::-webkit-scrollbar-track { background: #0b0b0b; }
-      ::-webkit-scrollbar-thumb { background: #262626; border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: #3b3b3b; }
+      body { background-color: #0f0f0f; color: #f1f1f1; font-family: Roboto, Arial, sans-serif; }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #0f0f0f; }
+      ::-webkit-scrollbar-thumb { background: #272727; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #3f3f3f; }
     </style>
   </head>
-  <body class="bg-[#0b0b0b] text-neutral-100 m-0 p-0 font-sans selection:bg-red-600 selection:text-white">
+  <body class="m-0 p-0">
     <div id="root"></div>
 
     <script type="text/babel">
       const { useState } = React;
 
-      // מערכת אייקונים פנימית נקייה ומותאמת אישית
-      const Icons = {
-        BrandLogo: () => (
-          <div className="flex items-center gap-2.5 select-none cursor-pointer">
-            <div className="w-9 h-9 bg-gradient-to-tr from-red-600 to-rose-500 rounded-xl flex items-center justify-center font-black text-lg text-white shadow-md shadow-red-600/20">
-              V
+      // YouTube-Style Clean Icons (SVG)
+      const YTIcon = {
+        Logo: () => (
+          <div className="flex items-center gap-1.5 cursor-pointer select-none">
+            <div className="bg-red-600 px-2.5 py-1 rounded-xl flex items-center justify-center shadow-md">
+              <svg height="16" width="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black tracking-tight leading-none text-white">
-                Vid<span className="text-red-500">Star</span>
-              </span>
-              <span className="text-[9px] text-neutral-400 font-bold tracking-widest uppercase">Network</span>
-            </div>
+            <span className="text-xl font-black tracking-tighter text-white">VidStar</span>
           </div>
         ),
         Menu: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>,
         Search: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
         Plus: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>,
-        Home: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-        Film: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 3v18"/><path d="m15 3v18"/><path d="m3 9h18"/><path d="m3 15h18"/></svg>,
-        User: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+        Home: (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>,
+        Video: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 3v18"/><path d="m15 3v18"/><path d="m3 9h18"/><path d="m3 15h18"/></svg>,
         Shield: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>,
-        Trash: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
-        Play: (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Trash: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
       };
 
       function App() {
-        const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+        const [navExpanded, setNavExpanded] = useState(true);
         const [currentView, setCurrentView] = useState('home');
         const [selectedCategory, setSelectedCategory] = useState('הכל');
-        const [categories, setCategories] = useState(['הכל', 'גיימינג', 'לייבים', 'מוזיקה', 'טכנולוגיה']);
-        const [newCatInput, setNewCatInput] = useState('');
-        
-        // רשימת התוכן מנוהלת דינמית לגמרי
+        const [categories, setCategories] = useState(['הכל', 'גיימינג', 'לייבים', 'מוזיקה', 'פודקאסטים', 'טכנולוגיה']);
+        const [newCatText, setNewCatText] = useState('');
+
+        // Videos Database (מתחיל נקי לחלוטין ללא זבל של AI)
         const [videos, setVideos] = useState([]);
         const [activeVideo, setActiveVideo] = useState(null);
 
-        // טופס העלאה
+        // Upload Modal
         const [isUploadOpen, setIsUploadOpen] = useState(false);
-        const [formTitle, setFormTitle] = useState('');
-        const [formThumb, setFormThumb] = useState('');
-        const [formCategory, setFormCategory] = useState('גיימינג');
-        const [formIsLive, setFormIsLive] = useState(false);
-        const [formDesc, setFormDesc] = useState('');
+        const [vTitle, setVTitle] = useState('');
+        const [vThumb, setVThumb] = useState('');
+        const [vCat, setVCat] = useState('גיימינג');
+        const [vIsLive, setVIsLive] = useState(false);
+        const [vDesc, setVDesc] = useState('');
 
-        // צ'אט חי למודרטורים
-        const [chatLogs, setChatLogs] = useState([
-          { id: 1, user: 'מערכת בטיחות', text: 'הצ׳אט מאובטח תחת פיקוח מודרטורים של VidStar.', role: 'sys' }
+        // Live Chat & Mod Tools
+        const [chatMsgs, setChatMsgs] = useState([
+          { id: 1, user: 'הנהלת VidStar', text: 'מערכת צ׳אט וסינון מודרטורים הופעלה בהצלחה.', role: 'sys' }
         ]);
         const [chatInput, setChatInput] = useState('');
 
         const handleAddCategory = (e) => {
           e.preventDefault();
-          if (newCatInput.trim() && !categories.includes(newCatInput.trim())) {
-            setCategories([...categories, newCatInput.trim()]);
-            setNewCatInput('');
+          if (newCatText.trim() && !categories.includes(newCatText.trim())) {
+            setCategories([...categories, newCatText.trim()]);
+            setNewCatText('');
           }
         };
 
-        const handleUploadSubmit = (e) => {
+        const handleUpload = (e) => {
           e.preventDefault();
-          if (!formTitle.trim()) return;
+          if (!vTitle.trim()) return;
 
-          const newEntry = {
+          const newVid = {
             id: Date.now().toString(),
-            title: formTitle,
+            title: vTitle,
             channelName: 'הערוץ שלי',
             views: '1 צפייה',
             time: 'זה עתה',
-            category: formCategory,
-            isLive: formIsLive,
-            thumbnail: formThumb.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
-            description: formDesc || 'תוכן שנוהל והועלה דרך פלטפורמת היוצרים.'
+            category: vCat,
+            isLive: vIsLive,
+            thumbnail: vThumb.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
+            description: vDesc || 'סרטון או שידור חי שהועלה ישירות למערכת.'
           };
 
-          setVideos([newEntry, ...videos]);
-          setFormTitle('');
-          setFormThumb('');
-          setFormDesc('');
+          setVideos([newVid, ...videos]);
+          setVTitle('');
+          setVThumb('');
+          setVDesc('');
           setIsUploadOpen(false);
           setCurrentView('home');
         };
 
-        const visibleVideos = selectedCategory === 'הכל' 
+        const filteredVideos = selectedCategory === 'הכל' 
           ? videos 
           : videos.filter(v => v.category === selectedCategory || (selectedCategory === 'לייבים' && v.isLive));
 
         return (
-          <div className="min-h-screen bg-[#0b0b0b] text-neutral-100 flex flex-col font-sans">
+          <div className="min-h-screen bg-[#0f0f0f] text-white flex flex-col">
             
-            {/* Top Navigation Bar */}
-            <header className="h-14 bg-[#0b0b0b]/95 backdrop-blur border-b border-[#222222] px-4 flex items-center justify-between sticky top-0 z-50">
+            {/* --- HEADER (YouTube Style) --- */}
+            <header className="h-14 bg-[#0f0f0f] px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#272727]">
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="p-2 hover:bg-[#1f1f1f] rounded-xl transition text-neutral-300"
+                  onClick={() => setNavExpanded(!navExpanded)}
+                  className="p-2 hover:bg-[#272727] rounded-full transition text-neutral-300"
                 >
-                  <Icons.Menu className="w-5 h-5" />
+                  <YTIcon.Menu className="w-5 h-5" />
                 </button>
                 <div onClick={() => setCurrentView('home')}>
-                  <Icons.BrandLogo />
+                  <YTIcon.Logo />
                 </div>
               </div>
 
+              {/* Central Search Bar */}
               <div className="hidden md:flex items-center flex-1 max-w-xl mx-8">
-                <div className="flex w-full items-center bg-[#141414] border border-[#262626] rounded-full overflow-hidden focus-within:border-red-600 transition">
+                <div className="flex w-full items-center bg-[#121212] border border-[#303030] rounded-full overflow-hidden focus-within:border-blue-500">
                   <input 
                     type="text" 
-                    placeholder="חיפוש חופשי במערכת..." 
-                    className="w-full bg-transparent px-5 py-2 text-xs text-white focus:outline-none placeholder-neutral-500"
+                    placeholder="חיפוש..." 
+                    className="w-full bg-transparent px-5 py-2 text-sm text-white focus:outline-none placeholder-neutral-500"
                   />
-                  <button className="bg-[#1f1f1f] hover:bg-[#262626] px-5 py-2 text-neutral-300 border-r border-[#262626] transition">
-                    <Icons.Search className="w-4 h-4" />
+                  <button className="bg-[#222222] hover:bg-[#272727] px-6 py-2 text-neutral-300 border-r border-[#303030]">
+                    <YTIcon.Search className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5">
+              {/* Right Action Buttons */}
+              <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setIsUploadOpen(true)}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-1.5 rounded-full text-xs font-bold transition shadow-lg shadow-red-600/25"
+                  className="flex items-center gap-2 bg-[#272727] hover:bg-[#3f3f3f] px-3.5 py-1.5 rounded-full text-xs font-semibold transition"
                 >
-                  <Icons.Plus className="w-4 h-4" />
-                  <span>העלה תוכן</span>
+                  <YTIcon.Plus className="w-4 h-4 text-red-500" />
+                  <span>יצירה / העלאה</span>
                 </button>
-
                 <button 
                   onClick={() => setCurrentView('my-channel')}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold transition border ${currentView === 'my-channel' ? 'bg-[#262626] border-neutral-500 text-white' : 'bg-[#141414] border-[#262626] hover:bg-[#1f1f1f] text-neutral-300'}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${currentView === 'my-channel' ? 'bg-white text-black' : 'bg-[#272727] hover:bg-[#3f3f3f]'}`}
                 >
-                  <Icons.User className="w-4 h-4" />
-                  <span>הערוץ שלי</span>
+                  הערוץ שלי
                 </button>
               </div>
             </header>
 
             <div className="flex flex-1">
               
-              {/* Sidebar Menu */}
-              {isSidebarOpen && (
-                <aside className="w-60 p-3 hidden md:flex flex-col gap-1 border-l border-[#222222] sticky top-14 h-[calc(100vh-56px)] overflow-y-auto">
+              {/* --- SIDEBAR (YouTube Style Navigation) --- */}
+              {navExpanded && (
+                <aside className="w-60 p-3 hidden md:flex flex-col gap-1 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto border-l border-[#272727]">
                   <button 
                     onClick={() => { setCurrentView('home'); setSelectedCategory('הכל'); }}
-                    className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${currentView === 'home' ? 'bg-[#1f1f1f] text-white font-bold' : 'text-neutral-400 hover:bg-[#141414] hover:text-white'}`}
+                    className={`flex items-center gap-6 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${currentView === 'home' ? 'bg-[#272727] text-white font-bold' : 'text-neutral-300 hover:bg-[#272727]/50'}`}
                   >
-                    <Icons.Home className="w-4 h-4 text-red-500" />
+                    <YTIcon.Home className="w-5 h-5 text-red-500" />
                     <span>דף הבית</span>
                   </button>
 
                   <button 
                     onClick={() => setCurrentView('my-channel')}
-                    className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${currentView === 'my-channel' ? 'bg-[#1f1f1f] text-white font-bold' : 'text-neutral-400 hover:bg-[#141414] hover:text-white'}`}
+                    className={`flex items-center gap-6 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${currentView === 'my-channel' ? 'bg-[#272727] text-white font-bold' : 'text-neutral-300 hover:bg-[#272727]/50'}`}
                   >
-                    <Icons.Film className="w-4 h-4 text-blue-500" />
-                    <span>הסרטונים והלייבים שלי</span>
+                    <YTIcon.Video className="w-5 h-5 text-blue-500" />
+                    <span>התוכן שלי</span>
                   </button>
 
-                  <hr className="border-[#222222] my-3" />
+                  <hr className="border-[#272727] my-3" />
                   
-                  <div className="px-3 text-[11px] font-bold text-neutral-500 mb-1">ניהול קטגוריות</div>
+                  <div className="px-3 text-xs font-bold text-neutral-400 mb-2">ניהול קטגוריות</div>
                   <form onSubmit={handleAddCategory} className="px-1 mb-2 flex gap-1">
                     <input 
                       type="text" 
                       placeholder="הוסף קטגוריה..." 
-                      value={newCatInput}
-                      onChange={(e) => setNewCatInput(e.target.value)}
-                      className="flex-1 bg-[#141414] border border-[#262626] rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-red-600"
+                      value={newCatText}
+                      onChange={(e) => setNewCatText(e.target.value)}
+                      className="flex-1 bg-[#181818] border border-[#333] rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-red-500"
                     />
-                    <button type="submit" className="bg-red-600 hover:bg-red-500 px-2.5 py-1 rounded-lg text-xs font-bold">+</button>
+                    <button type="submit" className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded-lg text-xs font-bold">+</button>
                   </form>
 
                   <div className="flex flex-col gap-0.5">
@@ -197,7 +191,7 @@
                       <button 
                         key={cat}
                         onClick={() => { setSelectedCategory(cat); setCurrentView('home'); }}
-                        className={`text-right px-3 py-1.5 rounded-lg text-xs transition ${selectedCategory === cat && currentView === 'home' ? 'bg-[#262626] text-white font-bold' : 'text-neutral-400 hover:bg-[#141414] hover:text-white'}`}
+                        className={`text-right px-3.5 py-2 rounded-lg text-xs transition ${selectedCategory === cat && currentView === 'home' ? 'bg-[#3f3f3f] font-bold text-white' : 'text-neutral-400 hover:bg-[#272727] hover:text-white'}`}
                       >
                         # {cat}
                       </button>
@@ -206,58 +200,56 @@
                 </aside>
               )}
 
-              {/* Main Content Area */}
+              {/* --- MAIN CONTENT FEED --- */}
               <main className="flex-1 p-6">
                 
-                {/* HOME VIEW */}
                 {currentView === 'home' && (
                   <div>
+                    {/* Category Filter Chips (YouTube Style) */}
                     <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
                       {categories.map(cat => (
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}
-                          className={`px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition border ${selectedCategory === cat ? 'bg-white text-black border-white' : 'bg-[#181818] text-neutral-300 border-[#262626] hover:bg-[#222222]'}`}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${selectedCategory === cat ? 'bg-white text-black' : 'bg-[#272727] text-neutral-300 hover:bg-[#3f3f3f]'}`}
                         >
                           {cat}
                         </button>
                       ))}
                     </div>
 
-                    {visibleVideos.length === 0 ? (
-                      <div className="text-center py-24 bg-[#111111] rounded-3xl border border-[#222222] max-w-lg mx-auto my-6">
-                        <div className="w-14 h-14 bg-red-600/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                          <Icons.Film className="w-7 h-7" />
+                    {filteredVideos.length === 0 ? (
+                      <div className="text-center py-24 bg-[#181818]/40 rounded-3xl border border-[#272727] max-w-lg mx-auto">
+                        <div className="w-16 h-16 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <YTIcon.Video className="w-8 h-8" />
                         </div>
-                        <h2 className="text-base font-bold mb-1">המרחב הזה ריק כרגע</h2>
-                        <p className="text-xs text-neutral-400 mb-5">העלה את הסרטון או השידור החי הראשון שלך לפלטפורמה.</p>
+                        <h2 className="text-lg font-bold mb-1">אין כאן סרטונים עדיין</h2>
+                        <p className="text-xs text-neutral-400 mb-6">לחץ על כפתור יצירה והעלה את הסרטון הראשון שלך.</p>
                         <button 
                           onClick={() => setIsUploadOpen(true)}
-                          className="bg-red-600 hover:bg-red-500 px-5 py-2 rounded-full text-xs font-bold transition shadow-lg shadow-red-600/30"
+                          className="bg-red-600 hover:bg-red-500 px-5 py-2 rounded-full text-xs font-bold transition shadow-lg"
                         >
-                          העלה תוכן חדש
+                          העלה סרטון עכשיו
                         </button>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {visibleVideos.map(vid => (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {filteredVideos.map(vid => (
                           <div 
                             key={vid.id}
                             onClick={() => { setActiveVideo(vid); setCurrentView('watch'); }}
                             className="group cursor-pointer flex flex-col gap-2.5"
                           >
-                            <div className="relative aspect-video bg-[#141414] rounded-2xl overflow-hidden border border-[#222222]">
+                            <div className="relative aspect-video bg-[#222] rounded-2xl overflow-hidden border border-[#272727]">
                               <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
                               {vid.isLive && (
-                                <span className="absolute top-2.5 right-2.5 bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md flex items-center gap-1 shadow">
+                                <span className="absolute top-2.5 right-2.5 bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded flex items-center gap-1 shadow">
                                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> LIVE
                                 </span>
                               )}
                             </div>
-                            <div className="flex gap-3 px-0.5">
-                              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center font-bold text-xs shrink-0">
-                                V
-                              </div>
+                            <div className="flex gap-3">
+                              <div className="w-9 h-9 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-xs shrink-0">V</div>
                               <div>
                                 <h3 className="font-bold text-sm line-clamp-2 text-white group-hover:text-red-400 transition leading-snug">{vid.title}</h3>
                                 <p className="text-xs text-neutral-400 mt-1">{vid.channelName}</p>
@@ -271,32 +263,30 @@
                   </div>
                 )}
 
-                {/* MY CHANNEL VIEW */}
+                {/* --- MY CHANNEL VIEW --- */}
                 {currentView === 'my-channel' && (
                   <div className="space-y-6 max-w-5xl mx-auto">
-                    <div className="bg-[#111111] p-6 rounded-3xl border border-[#222222] flex items-center gap-5 shadow-xl">
-                      <div className="w-16 h-16 bg-gradient-to-tr from-red-600 to-rose-500 rounded-2xl flex items-center justify-center text-2xl font-black shadow-lg shadow-red-600/30">
-                        V
-                      </div>
+                    <div className="bg-[#181818] p-6 rounded-3xl border border-[#272727] flex items-center gap-5">
+                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-2xl font-black">V</div>
                       <div>
-                        <h1 className="text-xl font-black">הערוץ שלי (Creator Studio)</h1>
-                        <p className="text-xs text-neutral-400 mt-0.5">מרחב הניהול הפרטי של התכנים והשידורים החיים שלך.</p>
+                        <h1 className="text-xl font-bold">הערוץ שלי (VidStar Studio)</h1>
+                        <p className="text-xs text-neutral-400 mt-0.5">כאן מתנהלים כל הסרטונים והשידורים החיים שהעלית למערכת.</p>
                       </div>
                     </div>
 
-                    <h2 className="text-sm font-bold text-neutral-300">התוכן שלך ({videos.filter(v => v.channelName === 'הערוץ שלי').length})</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <h2 className="text-sm font-bold text-neutral-300">התוכן שלך</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {videos.filter(v => v.channelName === 'הערוץ שלי').map(vid => (
-                        <div key={vid.id} className="bg-[#111111] p-3.5 rounded-2xl border border-[#222222] flex flex-col gap-2.5 shadow-md">
-                          <img src={vid.thumbnail} alt={vid.title} className="aspect-video object-cover rounded-xl border border-[#222222]" />
+                        <div key={vid.id} className="bg-[#181818] p-3.5 rounded-2xl border border-[#272727] flex flex-col gap-2.5">
+                          <img src={vid.thumbnail} alt={vid.title} className="aspect-video object-cover rounded-xl" />
                           <h3 className="font-bold text-xs line-clamp-1">{vid.title}</h3>
-                          <div className="flex justify-between items-center mt-1 pt-2.5 border-t border-[#222222]">
-                            <span className="text-[11px] text-neutral-400 font-medium">{vid.isLive ? '🔴 שידור חי' : '🎬 סרטון'}</span>
+                          <div className="flex justify-between items-center mt-1 pt-2 border-t border-[#272727]">
+                            <span className="text-[11px] text-neutral-400">{vid.isLive ? '🔴 שידור חי' : '🎬 סרטון'}</span>
                             <button 
                               onClick={() => setVideos(videos.filter(item => item.id !== vid.id))}
-                              className="text-red-500 hover:bg-red-500/10 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                              className="text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
                             >
-                              <Icons.Trash className="w-3.5 h-3.5" /> מחק
+                              <YTIcon.Trash className="w-3.5 h-3.5" /> מחק
                             </button>
                           </div>
                         </div>
@@ -305,75 +295,60 @@
                   </div>
                 )}
 
-                {/* WATCH & MODERATOR CHAT VIEW */}
+                {/* --- WATCH / STREAM & MODERATOR CHAT VIEW --- */}
                 {currentView === 'watch' && activeVideo && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     <div className="lg:col-span-2 space-y-4">
-                      <div className="aspect-video bg-black rounded-3xl overflow-hidden relative shadow-2xl border border-[#222222]">
+                      <div className="aspect-video bg-black rounded-3xl overflow-hidden relative shadow-2xl border border-[#272727]">
                         <img src={activeVideo.thumbnail} alt={activeVideo.title} className="w-full h-full object-cover opacity-80" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition shadow-lg shadow-red-600/40">
-                            <Icons.Play className="w-7 h-7 fill-current ml-0.5" />
+                          <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition shadow-lg">
+                            <svg height="24" width="24" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                           </div>
                         </div>
                       </div>
-                      
-                      <h1 className="text-base font-bold">{activeVideo.title}</h1>
-                      <div className="flex items-center justify-between py-2 border-b border-[#222222]">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center font-bold text-xs">V</div>
-                          <div>
-                            <h4 className="font-bold text-xs">{activeVideo.channelName}</h4>
-                            <p className="text-[10px] text-neutral-400">מאומת ב-VidStar</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-[#111111] p-4 rounded-2xl border border-[#222222] text-xs text-neutral-300">
+                      <h1 className="text-lg font-bold">{activeVideo.title}</h1>
+                      <div className="bg-[#181818] p-4 rounded-2xl border border-[#272727] text-xs text-neutral-300">
                         {activeVideo.description}
                       </div>
                     </div>
 
-                    {/* Streamer & Moderator Chat Box */}
-                    <div className="bg-[#111111] border border-[#222222] rounded-3xl flex flex-col h-[520px] shadow-xl">
-                      <div className="p-3.5 border-b border-[#222222] flex justify-between items-center text-xs font-bold">
-                        <span className="flex items-center gap-2 text-neutral-200">
-                          <Icons.Shield className="w-4 h-4 text-blue-400" /> צ׳אט חי ומערכת מודים
-                        </span>
-                        <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-bold">מודרטור</span>
+                    {/* Streamer & Moderator Chat */}
+                    <div className="bg-[#181818] border border-[#272727] rounded-3xl flex flex-col h-[520px]">
+                      <div className="p-3.5 border-b border-[#272727] flex justify-between items-center text-xs font-bold">
+                        <span className="flex items-center gap-1.5"><YTIcon.Shield className="w-4 h-4 text-blue-400" /> צ׳אט ומערכת מודים</span>
+                        <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">פעיל</span>
                       </div>
-                      
                       <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5 text-xs">
-                        {chatLogs.map(item => (
-                          <div key={item.id} className="flex justify-between items-start bg-[#181818] p-2.5 rounded-xl border border-[#222222]">
+                        {chatMsgs.map(m => (
+                          <div key={m.id} className="flex justify-between items-start bg-[#222] p-2.5 rounded-xl">
                             <div>
-                              <span className="font-bold text-red-400">{item.user}: </span>
-                              <span className="text-neutral-200">{item.text}</span>
+                              <span className="font-bold text-red-400">{m.user}: </span>
+                              <span className="text-neutral-200">{m.text}</span>
                             </div>
                             <button 
-                              onClick={() => setChatLogs(chatLogs.filter(c => c.id !== item.id))}
-                              className="text-neutral-500 hover:text-red-400 p-0.5 transition"
-                              title="מחק הודעה"
+                              onClick={() => setChatMsgs(chatMsgs.filter(item => item.id !== m.id))}
+                              className="text-neutral-500 hover:text-red-400 text-[11px]"
                             >
-                              <Icons.Trash className="w-3.5 h-3.5" />
+                              מחק
                             </button>
                           </div>
                         ))}
                       </div>
-
                       <form onSubmit={(e) => {
                         e.preventDefault();
                         if (!chatInput.trim()) return;
-                        setChatLogs([...chatLogs, { id: Date.now(), user: 'סטרימר', text: chatInput, role: 'mod' }]);
+                        setChatMsgs([...chatMsgs, { id: Date.now(), user: 'סטרימר', text: chatInput, role: 'mod' }]);
                         setChatInput('');
-                      }} className="p-3 border-t border-[#222222] flex gap-2">
+                      }} className="p-3 border-t border-[#272727] flex gap-2">
                         <input 
                           type="text" 
-                          placeholder="הגב כסטרימר בצ׳אט..." 
+                          placeholder="הגב כסטרימר..." 
                           value={chatInput}
                           onChange={(e) => setChatInput(e.target.value)}
-                          className="flex-1 bg-[#181818] border border-[#262626] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-600"
+                          className="flex-1 bg-[#222] border border-[#333] rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
                         />
-                        <button type="submit" className="bg-red-600 hover:bg-red-500 px-3.5 py-2 rounded-xl text-xs font-bold transition">שלח</button>
+                        <button type="submit" className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-xl text-xs font-bold">שלח</button>
                       </form>
                     </div>
                   </div>
@@ -382,22 +357,22 @@
               </main>
             </div>
 
-            {/* UPLOAD MODAL */}
+            {/* --- UPLOAD MODAL --- */}
             {isUploadOpen && (
-              <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className="bg-[#111111] border border-[#222222] rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-                  <h2 className="text-base font-bold">העלאת תוכן חדש לפלטפורמה</h2>
+              <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                <div className="bg-[#181818] border border-[#272727] rounded-3xl p-6 max-w-md w-full space-y-4">
+                  <h2 className="text-base font-bold">העלאת תוכן חדש</h2>
                   
-                  <form onSubmit={handleUploadSubmit} className="space-y-3">
+                  <form onSubmit={handleUpload} className="space-y-3">
                     <div>
                       <label className="text-xs text-neutral-400 block mb-1">כותרת הסרטון / הלייב</label>
                       <input 
                         type="text" 
                         required
-                        value={formTitle}
-                        onChange={(e) => setFormTitle(e.target.value)}
-                        placeholder="לדוגמה: שידור חי גיימינג..."
-                        className="w-full bg-[#181818] border border-[#262626] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-red-600"
+                        value={vTitle}
+                        onChange={(e) => setVTitle(e.target.value)}
+                        placeholder="לדוגמה: לייב גיימינג..."
+                        className="w-full bg-[#222] border border-[#333] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-red-500"
                       />
                     </div>
 
@@ -405,29 +380,29 @@
                       <label className="text-xs text-neutral-400 block mb-1">קישור לתמונה (Thumbnail URL)</label>
                       <input 
                         type="text" 
-                        value={formThumb}
-                        onChange={(e) => setFormThumb(e.target.value)}
+                        value={vThumb}
+                        onChange={(e) => setVThumb(e.target.value)}
                         placeholder="https://images.unsplash.com/..."
-                        className="w-full bg-[#181818] border border-[#262626] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-red-600"
+                        className="w-full bg-[#222] border border-[#333] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-red-500"
                       />
                     </div>
 
                     <div>
                       <label className="text-xs text-neutral-400 block mb-1">תיאור</label>
                       <textarea 
-                        value={formDesc}
-                        onChange={(e) => setFormDesc(e.target.value)}
+                        value={vDesc}
+                        onChange={(e) => setVDesc(e.target.value)}
                         placeholder="תאר את התוכן שלך..."
-                        className="w-full bg-[#181818] border border-[#262626] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none h-20 resize-none"
+                        className="w-full bg-[#222] border border-[#333] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none h-20 resize-none"
                       ></textarea>
                     </div>
 
                     <div>
-                      <label className="text-xs text-neutral-400 block mb-1">קטגוריה ראשית</label>
+                      <label className="text-xs text-neutral-400 block mb-1">קטגוריה</label>
                       <select 
-                        value={formCategory}
-                        onChange={(e) => setFormCategory(e.target.value)}
-                        className="w-full bg-[#181818] border border-[#262626] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none"
+                        value={vCat}
+                        onChange={(e) => setVCat(e.target.value)}
+                        className="w-full bg-[#222] border border-[#333] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none"
                       >
                         {categories.filter(c => c !== 'הכל').map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
@@ -436,27 +411,27 @@
                     <div className="flex items-center gap-2 pt-1">
                       <input 
                         type="checkbox" 
-                        id="isLive"
-                        checked={formIsLive}
-                        onChange={(e) => setFormIsLive(e.target.checked)}
+                        id="liveCheck"
+                        checked={vIsLive}
+                        onChange={(e) => setVIsLive(e.target.checked)}
                         className="w-4 h-4 accent-red-600 rounded"
                       />
-                      <label htmlFor="isLive" className="text-xs text-neutral-300">הגדר כשידור חי פעיל (Live Stream)</label>
+                      <label htmlFor="liveCheck" className="text-xs text-neutral-300">הגדר כשידור חי (Live Stream)</label>
                     </div>
 
                     <div className="flex gap-2 pt-3">
                       <button 
                         type="button" 
                         onClick={() => setIsUploadOpen(false)}
-                        className="flex-1 bg-[#1f1f1f] hover:bg-[#262626] py-2.5 rounded-xl text-xs font-bold transition"
+                        className="flex-1 bg-[#272727] hover:bg-[#333] py-2.5 rounded-xl text-xs font-bold transition"
                       >
                         ביטול
                       </button>
                       <button 
                         type="submit" 
-                        className="flex-1 bg-red-600 hover:bg-red-500 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-red-600/30"
+                        className="flex-1 bg-red-600 hover:bg-red-500 py-2.5 rounded-xl text-xs font-bold transition shadow-lg"
                       >
-                        פרסם עכשיו
+                        פרסם
                       </button>
                     </div>
                   </form>
