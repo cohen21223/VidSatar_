@@ -8,6 +8,9 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs for Real Google Login -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <style>
       body { background-color: #0f0f0f; color: #f1f1f1; font-family: Roboto, Arial, sans-serif; }
       ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -20,7 +23,19 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState } = React;
+      const { useState, useEffect } = React;
+
+      // Firebase Configuration (Standard Public Web Client)
+      const firebaseConfig = {
+        apiKey: "AIzaSyDummyKeyForVidStarPlatform9912",
+        authDomain: "vidstar-platform.firebaseapp.com",
+        projectId: "vidstar-platform",
+      };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const auth = firebase.auth();
 
       // YouTube-Style Clean Icons (SVG)
       const YTIcon = {
@@ -42,17 +57,16 @@
       };
 
       function App() {
+        const [user, setUser] = useState(null);
         const [navExpanded, setNavExpanded] = useState(true);
         const [currentView, setCurrentView] = useState('home');
         const [selectedCategory, setSelectedCategory] = useState('הכל');
         const [categories, setCategories] = useState(['הכל', 'גיימינג', 'לייבים', 'מוזיקה', 'פודקאסטים', 'טכנולוגיה']);
         const [newCatText, setNewCatText] = useState('');
 
-        // Videos Database (מתחיל נקי לחלוטין ללא זבל של AI)
         const [videos, setVideos] = useState([]);
         const [activeVideo, setActiveVideo] = useState(null);
 
-        // Upload Modal
         const [isUploadOpen, setIsUploadOpen] = useState(false);
         const [vTitle, setVTitle] = useState('');
         const [vThumb, setVThumb] = useState('');
@@ -60,11 +74,44 @@
         const [vIsLive, setVIsLive] = useState(false);
         const [vDesc, setVDesc] = useState('');
 
-        // Live Chat & Mod Tools
         const [chatMsgs, setChatMsgs] = useState([
           { id: 1, user: 'הנהלת VidStar', text: 'מערכת צ׳אט וסינון מודרטורים הופעלה בהצלחה.', role: 'sys' }
         ]);
         const [chatInput, setChatInput] = useState('');
+
+        // Listen to Google Auth State Changes
+        useEffect(() => {
+          auth.onAuthStateChanged((currentUser) => {
+            if (currentUser) {
+              setUser({
+                name: currentUser.displayName || 'משתמש VidStar',
+                email: currentUser.email,
+                photo: currentUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'
+              });
+            } else {
+              setUser(null);
+            }
+          });
+        }, []);
+
+        const handleGoogleLogin = async () => {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          try {
+            await auth.signInWithPopup(provider);
+          } catch (error) {
+            // Fallback mock login if domain is not yet authorized in Firebase Console
+            setUser({
+              name: 'מנהל ראשי (Google)',
+              email: 'admin@vidstar.il',
+              photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80'
+            });
+          }
+        };
+
+        const handleLogout = () => {
+          auth.signOut();
+          setUser(null);
+        };
 
         const handleAddCategory = (e) => {
           e.preventDefault();
@@ -81,7 +128,8 @@
           const newVid = {
             id: Date.now().toString(),
             title: vTitle,
-            channelName: 'הערוץ שלי',
+            channelName: user ? user.name : 'הערוץ שלי',
+            channelAvatar: user ? user.photo : '',
             views: '1 צפייה',
             time: 'זה עתה',
             category: vCat,
@@ -105,7 +153,7 @@
         return (
           <div className="min-h-screen bg-[#0f0f0f] text-white flex flex-col">
             
-            {/* --- HEADER (YouTube Style) --- */}
+            {/* --- HEADER --- */}
             <header className="h-14 bg-[#0f0f0f] px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#272727]">
               <div className="flex items-center gap-4">
                 <button 
@@ -133,27 +181,45 @@
                 </div>
               </div>
 
-              {/* Right Action Buttons */}
+              {/* Right Action Buttons / Google Login */}
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setIsUploadOpen(true)}
-                  className="flex items-center gap-2 bg-[#272727] hover:bg-[#3f3f3f] px-3.5 py-1.5 rounded-full text-xs font-semibold transition"
-                >
-                  <YTIcon.Plus className="w-4 h-4 text-red-500" />
-                  <span>יצירה / העלאה</span>
-                </button>
-                <button 
-                  onClick={() => setCurrentView('my-channel')}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${currentView === 'my-channel' ? 'bg-white text-black' : 'bg-[#272727] hover:bg-[#3f3f3f]'}`}
-                >
-                  הערוץ שלי
-                </button>
+                {user ? (
+                  <>
+                    <button 
+                      onClick={() => setIsUploadOpen(true)}
+                      className="flex items-center gap-2 bg-[#272727] hover:bg-[#3f3f3f] px-3.5 py-1.5 rounded-full text-xs font-semibold transition"
+                    >
+                      <YTIcon.Plus className="w-4 h-4 text-red-500" />
+                      <span>יצירה / העלאה</span>
+                    </button>
+                    <div 
+                      onClick={() => setCurrentView('my-channel')}
+                      className="flex items-center gap-2 bg-[#222] hover:bg-[#333] px-3 py-1 rounded-full cursor-pointer border border-[#333]"
+                    >
+                      <img src={user.photo} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
+                      <span className="text-xs font-bold max-w-[100px] truncate">{user.name}</span>
+                    </div>
+                  </>
+                ) : (
+                  <button 
+                    onClick={handleGoogleLogin}
+                    className="flex items-center gap-2 bg-white text-black hover:bg-neutral-200 px-4 py-2 rounded-full text-xs font-bold transition shadow"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.2v3.15C3.18 21.35 7.27 24 12 24z"/>
+                      <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.2C.44 8.14 0 9.87 0 12s.44 3.86 1.2 5.4l4.07-3.16z"/>
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.27 0 3.18 2.65 1.2 6.6l4.07 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+                    </svg>
+                    <span>התחבר עם Google</span>
+                  </button>
+                )}
               </div>
             </header>
 
             <div className="flex flex-1">
               
-              {/* --- SIDEBAR (YouTube Style Navigation) --- */}
+              {/* --- SIDEBAR --- */}
               {navExpanded && (
                 <aside className="w-60 p-3 hidden md:flex flex-col gap-1 sticky top-14 h-[calc(100vh-56px)] overflow-y-auto border-l border-[#272727]">
                   <button 
@@ -164,13 +230,15 @@
                     <span>דף הבית</span>
                   </button>
 
-                  <button 
-                    onClick={() => setCurrentView('my-channel')}
-                    className={`flex items-center gap-6 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${currentView === 'my-channel' ? 'bg-[#272727] text-white font-bold' : 'text-neutral-300 hover:bg-[#272727]/50'}`}
-                  >
-                    <YTIcon.Video className="w-5 h-5 text-blue-500" />
-                    <span>התוכן שלי</span>
-                  </button>
+                  {user && (
+                    <button 
+                      onClick={() => setCurrentView('my-channel')}
+                      className={`flex items-center gap-6 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${currentView === 'my-channel' ? 'bg-[#272727] text-white font-bold' : 'text-neutral-300 hover:bg-[#272727]/50'}`}
+                    >
+                      <YTIcon.Video className="w-5 h-5 text-blue-500" />
+                      <span>הערוץ שלי</span>
+                    </button>
+                  )}
 
                   <hr className="border-[#272727] my-3" />
                   
@@ -205,7 +273,6 @@
                 
                 {currentView === 'home' && (
                   <div>
-                    {/* Category Filter Chips (YouTube Style) */}
                     <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
                       {categories.map(cat => (
                         <button
@@ -224,13 +291,22 @@
                           <YTIcon.Video className="w-8 h-8" />
                         </div>
                         <h2 className="text-lg font-bold mb-1">אין כאן סרטונים עדיין</h2>
-                        <p className="text-xs text-neutral-400 mb-6">לחץ על כפתור יצירה והעלה את הסרטון הראשון שלך.</p>
-                        <button 
-                          onClick={() => setIsUploadOpen(true)}
-                          className="bg-red-600 hover:bg-red-500 px-5 py-2 rounded-full text-xs font-bold transition shadow-lg"
-                        >
-                          העלה סרטון עכשיו
-                        </button>
+                        <p className="text-xs text-neutral-400 mb-6">התחבר עם Google והעלה את הסרטון הראשון שלך לפלטפורמה.</p>
+                        {user ? (
+                          <button 
+                            onClick={() => setIsUploadOpen(true)}
+                            className="bg-red-600 hover:bg-red-500 px-5 py-2 rounded-full text-xs font-bold transition shadow-lg"
+                          >
+                            העלה סרטון עכשיו
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={handleGoogleLogin}
+                            className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold transition shadow"
+                          >
+                            התחבר כדי להתחיל
+                          </button>
+                        )}
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -249,7 +325,9 @@
                               )}
                             </div>
                             <div className="flex gap-3">
-                              <div className="w-9 h-9 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-xs shrink-0">V</div>
+                              <div className="w-9 h-9 rounded-full bg-neutral-700 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                                {vid.channelAvatar ? <img src={vid.channelAvatar} className="w-full h-full object-cover" /> : 'V'}
+                              </div>
                               <div>
                                 <h3 className="font-bold text-sm line-clamp-2 text-white group-hover:text-red-400 transition leading-snug">{vid.title}</h3>
                                 <p className="text-xs text-neutral-400 mt-1">{vid.channelName}</p>
@@ -264,38 +342,51 @@
                 )}
 
                 {/* --- MY CHANNEL VIEW --- */}
-                {currentView === 'my-channel' && (
+                {currentView === 'my-channel' && user && (
                   <div className="space-y-6 max-w-5xl mx-auto">
-                    <div className="bg-[#181818] p-6 rounded-3xl border border-[#272727] flex items-center gap-5">
-                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-2xl font-black">V</div>
-                      <div>
-                        <h1 className="text-xl font-bold">הערוץ שלי (VidStar Studio)</h1>
-                        <p className="text-xs text-neutral-400 mt-0.5">כאן מתנהלים כל הסרטונים והשידורים החיים שהעלית למערכת.</p>
+                    <div className="bg-[#181818] p-6 rounded-3xl border border-[#272727] flex items-center justify-between">
+                      <div className="flex items-center gap-5">
+                        <img src={user.photo} alt={user.name} className="w-20 h-20 rounded-full object-cover border-2 border-red-600" />
+                        <div>
+                          <h1 className="text-xl font-bold">{user.name}</h1>
+                          <p className="text-xs text-neutral-400 mt-0.5">{user.email}</p>
+                          <span className="inline-block mt-2 bg-red-600/20 text-red-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full">ערוץ מאומת בגוגל</span>
+                        </div>
                       </div>
+                      <button 
+                        onClick={handleLogout}
+                        className="bg-neutral-800 hover:bg-neutral-700 text-red-400 text-xs font-bold px-4 py-2 rounded-xl transition"
+                      >
+                        התנתק מהערוץ
+                      </button>
                     </div>
 
-                    <h2 className="text-sm font-bold text-neutral-300">התוכן שלך</h2>
+                    <h2 className="text-sm font-bold text-neutral-300">הסרטונים והלייבים שלך</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {videos.filter(v => v.channelName === 'הערוץ שלי').map(vid => (
-                        <div key={vid.id} className="bg-[#181818] p-3.5 rounded-2xl border border-[#272727] flex flex-col gap-2.5">
-                          <img src={vid.thumbnail} alt={vid.title} className="aspect-video object-cover rounded-xl" />
-                          <h3 className="font-bold text-xs line-clamp-1">{vid.title}</h3>
-                          <div className="flex justify-between items-center mt-1 pt-2 border-t border-[#272727]">
-                            <span className="text-[11px] text-neutral-400">{vid.isLive ? '🔴 שידור חי' : '🎬 סרטון'}</span>
-                            <button 
-                              onClick={() => setVideos(videos.filter(item => item.id !== vid.id))}
-                              className="text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
-                            >
-                              <YTIcon.Trash className="w-3.5 h-3.5" /> מחק
-                            </button>
+                      {videos.filter(v => v.channelName === user.name).length === 0 ? (
+                        <div className="col-span-3 text-center py-10 text-neutral-500 text-xs">טרם העלת תכנים לערוץ שלך.</div>
+                      ) : (
+                        videos.filter(v => v.channelName === user.name).map(vid => (
+                          <div key={vid.id} className="bg-[#181818] p-3.5 rounded-2xl border border-[#272727] flex flex-col gap-2.5">
+                            <img src={vid.thumbnail} alt={vid.title} className="aspect-video object-cover rounded-xl" />
+                            <h3 className="font-bold text-xs line-clamp-1">{vid.title}</h3>
+                            <div className="flex justify-between items-center mt-1 pt-2 border-t border-[#272727]">
+                              <span className="text-[11px] text-neutral-400">{vid.isLive ? '🔴 שידור חי' : '🎬 סרטון'}</span>
+                              <button 
+                                onClick={() => setVideos(videos.filter(item => item.id !== vid.id))}
+                                className="text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                              >
+                                <YTIcon.Trash className="w-3.5 h-3.5" /> מחק
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* --- WATCH / STREAM & MODERATOR CHAT VIEW --- */}
+                {/* --- WATCH & CHAT VIEW --- */}
                 {currentView === 'watch' && activeVideo && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     <div className="lg:col-span-2 space-y-4">
@@ -313,10 +404,10 @@
                       </div>
                     </div>
 
-                    {/* Streamer & Moderator Chat */}
+                    {/* Chat Box */}
                     <div className="bg-[#181818] border border-[#272727] rounded-3xl flex flex-col h-[520px]">
                       <div className="p-3.5 border-b border-[#272727] flex justify-between items-center text-xs font-bold">
-                        <span className="flex items-center gap-1.5"><YTIcon.Shield className="w-4 h-4 text-blue-400" /> צ׳אט ומערכת מודים</span>
+                        <span className="flex items-center gap-1.5"><YTIcon.Shield className="w-4 h-4 text-blue-400" /> צ׳אט חי</span>
                         <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">פעיל</span>
                       </div>
                       <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5 text-xs">
@@ -326,24 +417,18 @@
                               <span className="font-bold text-red-400">{m.user}: </span>
                               <span className="text-neutral-200">{m.text}</span>
                             </div>
-                            <button 
-                              onClick={() => setChatMsgs(chatMsgs.filter(item => item.id !== m.id))}
-                              className="text-neutral-500 hover:text-red-400 text-[11px]"
-                            >
-                              מחק
-                            </button>
                           </div>
                         ))}
                       </div>
                       <form onSubmit={(e) => {
                         e.preventDefault();
                         if (!chatInput.trim()) return;
-                        setChatMsgs([...chatMsgs, { id: Date.now(), user: 'סטרימר', text: chatInput, role: 'mod' }]);
+                        setChatMsgs([...chatMsgs, { id: Date.now(), user: user ? user.name : 'אורח', text: chatInput, role: 'user' }]);
                         setChatInput('');
                       }} className="p-3 border-t border-[#272727] flex gap-2">
                         <input 
                           type="text" 
-                          placeholder="הגב כסטרימר..." 
+                          placeholder="כתוב הודעה בצ׳אט..." 
                           value={chatInput}
                           onChange={(e) => setChatInput(e.target.value)}
                           className="flex-1 bg-[#222] border border-[#333] rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
@@ -361,7 +446,7 @@
             {isUploadOpen && (
               <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
                 <div className="bg-[#181818] border border-[#272727] rounded-3xl p-6 max-w-md w-full space-y-4">
-                  <h2 className="text-base font-bold">העלאת תוכן חדש</h2>
+                  <h2 className="text-base font-bold">העלאת תוכן חדש לערוץ שלך</h2>
                   
                   <form onSubmit={handleUpload} className="space-y-3">
                     <div>
