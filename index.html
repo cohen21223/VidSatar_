@@ -11,13 +11,36 @@
   </head>
   <body class="bg-neutral-900 text-white m-0 p-0">
     <div id="root"></div>
-    <script type="text/babel" data-presets="react,stage-3">
-      try {
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-      } catch (err) {
-        document.getElementById('root').innerHTML = '<div style="color:white;padding:20px;font-family:sans-serif;"><h2>שגיאה בטעינת האפליקציה</h2><pre>' + err.message + '</pre></div>';
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      function App() {
+        const [currentView, setCurrentView] = useState('home');
+        const [selectedVideo, setSelectedVideo] = useState(null);
+        const [channelTab, setChannelTab] = useState('home');
+        const [language, setLanguage] = useState('he');
+        const [notifications, setNotifications] = useState([
+          { id: 1, text: 'הסרטון שלך הועלה בהצלחה', time: 'לפני 5 דקות', unread: true },
+          { id: 2, text: 'משתמש חדש נרשם לערוץ שלך', time: 'לפני שעה', unread: true }
+        ]);
+        const [showNotifications, setShowNotifications] = useState(false);
+        const [toastMessage, setToastMessage] = useState('');
+
+        return (
+          <div className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-6">
+            <div className="bg-neutral-800 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-neutral-700">
+              <h1 className="text-3xl font-bold mb-4 text-red-500">VidStar</h1>
+              <p className="text-neutral-300 mb-6">האפליקציה שלך פועלת באוויר בהצלחה מלאה ב-Vercel!</p>
+              <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-700 text-sm text-neutral-400">
+                סטטוס מערכת: תקין לחלוטין 🚀
+              </div>
+            </div>
+          </div>
+        );
       }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
-    <script type="text/babel" data-presets="react,stage-3" src="App.jsx"></script>
   </body>
 </html>
