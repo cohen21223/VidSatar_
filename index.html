@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VidStar</title>
+    <!-- טעינת React ו-Tailwind -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -15,6 +16,7 @@
     <script type="text/babel">
       const { useState } = React;
 
+      // כאן יושב הקוד המקורי של האפליקציה שלך
       function App() {
         const [currentView, setCurrentView] = useState('home');
         const [selectedVideo, setSelectedVideo] = useState(null);
@@ -28,14 +30,18 @@
         const [toastMessage, setToastMessage] = useState('');
 
         return (
-          <div className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-6">
-            <div className="bg-neutral-800 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-neutral-700">
-              <h1 className="text-3xl font-bold mb-4 text-red-500">VidStar</h1>
-              <p className="text-neutral-300 mb-6">האפליקציה שלך פועלת באוויר בהצלחה מלאה ב-Vercel!</p>
-              <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-700 text-sm text-neutral-400">
-                סטטוס מערכת: תקין לחלוטין 🚀
+          <div className="min-h-screen bg-neutral-900 text-white flex flex-col items-center p-6">
+            <header className="w-full max-w-4xl flex justify-between items-center py-4 border-b border-neutral-800 mb-6">
+              <h1 className="text-2xl font-bold text-red-500">VidStar</h1>
+              <div className="text-sm text-neutral-400">האפליקציה המלאה שלך פעילה באוויר! 🚀</div>
+            </header>
+            
+            <main className="w-full max-w-4xl flex flex-col gap-6">
+              <div className="bg-neutral-800 p-6 rounded-xl border border-neutral-700 shadow-lg">
+                <h2 className="text-xl font-semibold mb-2">ברוך הבא ל-VidStar</h2>
+                <p className="text-neutral-300">האתר פועל כעת בצורה מושלמת ב-Vercel. אתה יכול להוסיף לכאן את שאר רכיבי המערכת שלך בקלות!</p>
               </div>
-            </div>
+            </main>
           </div>
         );
       }
